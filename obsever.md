@@ -5,54 +5,56 @@
 ### 应用场景举例
 实现同步滚动，引入观察者解耦：
 ``` JavaScript
-function Editor(input, preview) {
-  this.update = function () {
-    preview.innerHTML = markdown.toHTML(input.value);
-  };
-  input.editor = this;
-  this.update();
-}
-new Editor(editor, preview);
+const Event = (function () {
+  const clientList = {};
+  let listen, trigger, remove;
 
-// 引入观察者
-function setObserverBehavior(subjects){
-  if(!Array.isArray(subjects)){
-    if(subjects.length) subjects = Array.from(subjects);
-    else subjects = [subjects];
-  }
-  
-  subjects.forEach(function(subject){
-    subject.watchBy = function(target, type){
-      subject.addEventListener(type, function(evt){
-        evt.sender = subject;
-        evt.receiver = target;
-        target.notice && target.notice(type, evt);
-      });
+  listen = function (key, fn) {
+    if (!clientList[key]) {
+      clientList[key] = [];
     }
-  });
-}
+    clientList[key].push(fn);
+  };
 
-setObserverBehavior(editor);
-editor.watchBy(preview, 'scroll');
-editor.watchBy(hintbar, 'scroll');
+  trigger = function (...args) {
+    let key = Array.prototype.shift.call(args);
+    let fns = clientList[key];
+    if (!fns || fns.length === 0) {
+      return false;
+    }
+    for (let i = 0, fn; fn = fns[i++];) {
+      fn.apply(this, args);
+    }
+  };
 
-preview.notice = function(type, evt){
-  var sender = evt.sender,
-      receiver = evt.receiver;
-  var scrollRange = sender.scrollHeight - sender.clientHeight,
-      p = sender.scrollTop / scrollRange;  
-  
-  receiver.scrollTop = p * (receiver.scrollHeight - receiver.clientHeight);  
-}
+  remove = function (key, fn) {
+    let fns = clientList[key];
+    if (!fns) {
+      return false;
+    }
+    if (!fn) {
+      fns && (fns.length = 0);
+    } else {
+      for (let i = fns.length - 1; i >= 0; i--) {
+        let _fn = fns[i];
+        if (_fn === fn) {
+          fns.splice(i, 1);
+        }
+      }
+    }
+  };
 
-hintbar.notice = function(type, evt){
-  var sender = evt.sender,
-      receiver = evt.receiver;
-  var scrollRange = sender.scrollHeight - sender.clientHeight,
-      p = sender.scrollTop / scrollRange;  
-  
-  receiver.innerHTML = Math.round(100 * p) + '%';
-}
+  return {
+    listen: listen,
+    trigger: trigger,
+    remove: remove
+  }
+})();
+
+Event.listen('outputHello', () => {
+  console.log('say Hello');
+});
+Event.trigger('outputHello');
 ```
 
 ### 发布—订阅模式作用
