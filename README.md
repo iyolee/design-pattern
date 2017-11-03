@@ -7,5 +7,6 @@
 - [策略模式](https://github.com/iyolee/design-pattern/blob/master/strategy.md)
 - [代理模式](https://github.com/iyolee/design-pattern/blob/master/proxy.md)
 - [命令模式](https://github.com/iyolee/design-pattern/blob/master/command.md)
+- [组合模式](https://github.com/iyolee/design-pattern/blob/master/composite.md)
 - [迭代器模式](https://github.com/iyolee/design-pattern/blob/master/iterator.md)
 - [发布—订阅模式](https://github.com/iyolee/design-pattern/blob/master/obsever.md)
